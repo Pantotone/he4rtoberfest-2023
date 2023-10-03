@@ -1,0 +1,42 @@
+name: Hello World checker
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - "challenges/**"
+      - "!challenges/0-hello-world/**"
+    
+jobs:
+  helloworld-checker:
+    name: Checks if member completed the "00 - Hello World" challenge
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Checking
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const PR_AUTHOR_USERNAME = context.actor;
+
+          const globber = await glob.create(`challenges/**/${PR_AUTHOR_USERNAME}/*`);
+          const files = await globber.glob();
+          
+          const DIRECTORY_EXISTS = files.length > 0;
+          
+          if (!DIRECTORY_EXISTS) {
+            await createComment(`eh amigo voce nao fez o hello world ne`);
+            core.setFailed("Member didn't completed the \"00 - Hello World\" challenge before.");
+          }
+          
+          async function createComment(body) {
+              return await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body
+                });
+          }
