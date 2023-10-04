@@ -1,5 +1,8 @@
 name: Hello World checker
 
+permissions:
+  pull-requests: 'write'
+
 on:
   pull_request:
     types: [opened, synchronize]
